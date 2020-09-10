@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Richard Thompson</title>
+<link href="style.css" rel="stylesheet" />
+</head>
+<body>
+    <main class="page-content" aria-label="Content">
+        <div class="wrapper">
+            <a href="index.html"><-- Back</a>
+            <header>
+                <h1>Clothes Shop</h1>
+            </header>
+
+            <p>
+                <a href="TODO" target="_blank">Demo</a>
+                <a href="https://github.com/rthompson961/clothes" target="_blank">GitHub</a>
+            </p>
+
+            <p>
+                The aim of this project was to create something resembling a fully 
+                functioning site to get to grips with the practicalities of 
+                using Symfony and related tech in a r situation with all 
+                of the awkward realities and compromises that real business needs 
+                involve.
+            </p>
+
+            <p>I expressed this as the following requirements:</p>
+
+            <ul>
+                <li>
+                    Database structure where products have attributes split across
+                    at least 3 tables necessitating some non-trivial queries.
+                </li>
+                <li>
+                    Multiple variations of some products with appropriate navigation to 
+                    identify this to users.
+                </li>
+                <li>
+                    Shop interface that allows filtering by category, brand and colour, 
+                    sorting by multiple options and pagination.
+                </li>
+                <li>
+                    Product catalogue of at least 50 items with images and 
+                    content for each.
+                </li>
+                <li>
+                    Authentication system where users can register, login and content 
+                    is restricted to guests.
+                </li>
+                <li>
+                    Basic shopping cart which is available to both users and guests and 
+                    is not hampered by the auth system.
+                </li>
+                <li>
+                    Integration with a credit card payment provider. This should be as 
+                    painless as possible for the user.
+                </li>
+                <li>
+                    Unit tests for all services and functional tests for all controllers.
+                </li>
+                <li>
+                    Continuous Integration which polls source control for new commits,
+                    builds them automatically in a staging area and deploys to the cloud 
+                    if tests pass.
+                </li>
+                <li>
+                    Adherence to code standards with strong typing, PHPStan static analysis
+                    on the highest setting, PSR2 style guide and clean HTML.
+                </li>
+                <li>
+                    Responsive layout that automatically adapts to any screen width.
+                </li>
+            </ul>
+
+            <hr data-content="Database" />
+            <img src="clothes_erd.png" alt="database schema" />
+            <p>Most of the schema is self explanatory. Here's an example of the product hierarchy:</p>
+            <p>
+                <b>ProductGroup</b> - V-Neck T-Shirt<br />
+                <b>Product</b> - V-Neck T-Shirt in Red<br />
+                <b>ProductUnit</b> - V-Neck T-Shirt in Red in Small<br />
+                Products in a singular colour will not have a product group.
+            </p>
+            <hr data-content="Continuous Integration" />
+            <img src="pipeline.png" alt="pipeline" />
+            <p>Travis CI polls GitHub for new commits, upon finding one:</p>
+
+            <ul>
+                <li>Starts up containers based upon the docker-compose file (see below)</li>
+                <li>Loads composer dependencies</li>
+                <li>Dumps environment variables to a production file</li>
+                <li>Creates the database, runs migrations and loads fixtures</li>
+                <li>Runs unit and functional tests</li>
+            </ul>
+
+            <p>
+                If everything passes the site is zipped, uploaded to a S3 bucket where CodeDeploy
+                transfers it to a running EC2 instance.
+            </p>
+
+            <pre>
+                <code>
+version: "3.8"
+networks:
+  lamp:
+    name: lamp
+    driver: bridge
+services:
+  apache:
+    container_name: apache
+    image: rthompson961/apache
+    networks:
+      - lamp
+    ports:
+      - "80:80"
+    volumes:
+      - $PWD:/var/www/html
+    environment:
+      - DATABASE_URL=mysql://root:root@mysql:3306/clothes?serverVersion=5.7
+    depends_on:
+      - mysql
+  mysql:
+    container_name: mysql
+    image: "mysql:5.7"
+    networks:
+      - lamp
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+                </code>
+            </pre>
+        </div>
+    </main>    
+</body>
+</html>
