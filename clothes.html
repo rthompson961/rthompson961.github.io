@@ -133,6 +133,94 @@ services:
       MYSQL_ROOT_PASSWORD: root
                 </code>
             </pre>
+
+            <hr data-content="Observations" />
+
+            <h2>Skinny Controllers</h2>
+
+            <p>
+                The most complex aspect of the site is the shop controller 
+                which returns a product selection that can be filtered 
+                by one or more categories, brands and colours. Results can also 
+                be sorted by id, name, lowest price, highest price paginated 
+                into sets of 6.
+            </p>
+
+            <p>
+                A constant battle was the increasing size of the controller,
+                I tried to follow the <em>"Skinny controllers, fat models"</em>
+                philosophy as suggested by 
+                <a href="https://symfony.com/doc/4.0/best_practices/controllers.html">Symfony best practices</a>
+                and began to move logic into services. Following this approach
+                plus removing some overly officious validation as well as realising that 
+                my <em>QueryStringValidator</em>
+                service was reinventing methods the HttpFoundation Request class already 
+                had (oops!) I was able to reduce the Controller size from 150 lines of code to 30.
+            </p>
+
+            <h2>Product Filters</h2>
+
+            <p>
+                Each potential filter requires a link
+                that can be followed to apply the current selection. Filters
+                are separated into those currently active which require a link 
+                that removes the filter and those not currently set which require
+                one that applies it.
+            </p>
+
+            <img src="filters.png" alt="comparison of filter links" />
+
+            <p>
+                The first issue is how to handle the storage of the 
+                current filter selection, sort order and page number before
+                tackling adding/removal new filters.
+                Initially I created a url string containing the current selection 
+                and manipulated it using <em>substr</em> and <em>str_replace</em>. 
+                This took few lines of code so could be slotted in anywhere but 
+                seemed brittle and was difficult to test, so I replaced this with 
+                a more natural array approach.
+            </p>
+
+            <p>
+                Using an array requires two additional functions, one to return an 
+                array that has the new filter and another that returns the array 
+                with the filter removed. Because every request url requires all
+                filter details, this means that the function requires the current
+                selection of all three filter types not just the one currently 
+                being edited. 
+                For example if the link is going to add the colour blue to red and
+                yellow that are already applied, it is also necessary to provide 
+                the brands and categories that are currently applied otherwise 
+                the link will erroneously clear those filters.
+            </p>
+
+            <p>
+                This creates a trade off between passing in an entire array of filters
+                and then looping to the sub-array that needs to be added to / removed 
+                and splitting the filters array into separate variables and passing 
+                them to the mother separately. The First option creates more complex 
+                code and an extra layer of iteration however the second results in 
+                longer function definitions as filters are now split between three
+                variables rather than one.
+                I opted for option one as I felt this was the more readable of the 
+                two however I suspect there is a better way of going about this. 
+            </p>
+
+            <h2>n + 1 problem</h2>
+
+            <p>
+                Something that I became aware of due to Symfony's profiler was 
+                the eagerness of Doctrine to fetch entire related objects at 
+                when a parent object is retrieved even if that data is not
+                currently being used. There was an occasion on 
+                the checkout page where I inadvertently triggered the n + 1 problem 
+                as Doctrine was automatically grabbing properties from a related 
+                table on each iteration of a loop.
+                To avoid this on more complex queries I made sure to explicitly collect 
+                every field I required and no others with one database request at the 
+                beginning of a script rather than leaving it up to Doctrine to collect 
+                what it needed on an ad hoc basis.
+            </p>
         </div>
     </main>    
 </body>
