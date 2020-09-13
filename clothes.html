@@ -22,7 +22,7 @@
             <p>
                 The aim of this project was to create something resembling a fully 
                 functioning site to get to grips with the practicalities of 
-                using Symfony and related tech in a r situation with all 
+                using Symfony and related tech in a production situation with all 
                 of the awkward realities and compromises that real business needs 
                 involve.
             </p>
@@ -79,18 +79,18 @@
             <img src="clothes_erd.png" alt="database schema" />
             <p>Most of the schema is self explanatory. Here's an example of the product hierarchy:</p>
             <p>
-                <b>ProductGroup</b> - V-Neck T-Shirt<br />
-                <b>Product</b> - V-Neck T-Shirt in Red<br />
-                <b>ProductUnit</b> - V-Neck T-Shirt in Red in Small<br />
-                Products in a singular colour will not have a product group.
+                <b>ProductGroup</b> - T-Shirt<br />
+                <b>Product</b> - T-Shirt in Red<br />
+                <b>ProductUnit</b> - T-Shirt in Red in Small<br />
+                Products availabe in only one colour will not have a product group.
             </p>
             <hr data-content="Continuous Integration" />
             <img src="pipeline.png" alt="pipeline" />
-            <p>Travis CI polls GitHub for new commits, upon finding one:</p>
+            <p>Travis CI carries out the following build when a new commit is pushed to GitHub:</p>
 
             <ul>
-                <li>Starts up containers based upon the docker-compose file (see below)</li>
-                <li>Loads composer dependencies</li>
+                <li>Loads containers based upon the docker-compose file (see below)</li>
+                <li>Installs composer dependencies</li>
                 <li>Dumps environment variables to a production file</li>
                 <li>Creates the database, runs migrations and loads fixtures</li>
                 <li>Runs unit and functional tests</li>
@@ -142,8 +142,8 @@ services:
                 The most complex aspect of the site is the shop controller 
                 which returns a product selection that can be filtered 
                 by one or more categories, brands and colours. Results can also 
-                be sorted by id, name, lowest price, highest price paginated 
-                into sets of 6.
+                be sorted by id, name, lowest price, highest price and are 
+                paginated into sets of 6.
             </p>
 
             <p>
@@ -151,8 +151,8 @@ services:
                 I tried to follow the <em>"Skinny controllers, fat models"</em>
                 philosophy as suggested by 
                 <a href="https://symfony.com/doc/4.0/best_practices/controllers.html">Symfony best practices</a>
-                and began to move logic into services. Following this approach
-                plus removing some overly officious validation as well as realising that 
+                and began to move logic into services. Following this approach, 
+                removing some overly officious validation as well as realising that 
                 my <em>QueryStringValidator</em>
                 service was reinventing methods the HttpFoundation Request class already 
                 had (oops!) I was able to reduce the Controller size from 150 lines of code to 30.
@@ -164,7 +164,7 @@ services:
                 Each potential filter requires a link
                 that can be followed to apply the current selection. Filters
                 are separated into those currently active which require a link 
-                that removes the filter and those not currently set which require
+                that removes the filter and those not currently active which require
                 one that applies it.
             </p>
 
@@ -172,13 +172,12 @@ services:
 
             <p>
                 The first issue is how to handle the storage of the 
-                current filter selection, sort order and page number before
-                tackling adding/removal new filters.
+                current filter selection, sort order and page number.
                 Initially I created a url string containing the current selection 
                 and manipulated it using <em>substr</em> and <em>str_replace</em>. 
                 This took few lines of code so could be slotted in anywhere but 
                 seemed brittle and was difficult to test, so I replaced this with 
-                a more natural array approach.
+                a more resilent array approach.
             </p>
 
             <p>
@@ -188,22 +187,23 @@ services:
                 filter details, this means that the function requires the current
                 selection of all three filter types not just the one currently 
                 being edited. 
-                For example if the link is going to add the colour blue to red and
-                yellow that are already applied, it is also necessary to provide 
-                the brands and categories that are currently applied otherwise 
-                the link will erroneously clear those filters.
+                For example if the link is going to add blue to the 
+                colours red and yellow that are already applied, it is also 
+                necessary to provide the brands and categories that are currently 
+                applied otherwise the link will erroneously clear those filters.
             </p>
 
             <p>
                 This creates a trade off between passing in an entire array of filters
                 and then looping to the sub-array that needs to be added to / removed 
-                and splitting the filters array into separate variables and passing 
-                them to the mother separately. The First option creates more complex 
+                or splitting the filters array into separate variables and passing 
+                them to other functions separately. The First option creates more complex 
                 code and an extra layer of iteration however the second results in 
                 longer function definitions as filters are now split between three
                 variables rather than one.
                 I opted for option one as I felt this was the more readable of the 
-                two however I suspect there is a better way of going about this. 
+                two however I suspect there is a better way of going about this
+                that provides the best of both worlds. 
             </p>
 
             <h2>n + 1 problem</h2>
@@ -211,14 +211,17 @@ services:
             <p>
                 Something that I became aware of due to Symfony's profiler was 
                 the eagerness of Doctrine to fetch entire related objects at 
-                when a parent object is retrieved even if that data is not
-                currently being used. There was an occasion on 
-                the checkout page where I inadvertently triggered the n + 1 problem 
-                as Doctrine was automatically grabbing properties from a related 
-                table on each iteration of a loop.
+                when a parent object is retrieved which can result in a suprisingly 
+                large amount of queries being made, many of which is are unnecesary. 
+            </p>
+
+            <p>
+                There was an occasion on the checkout page where I inadvertently 
+                triggered the n + 1 problem as Doctrine was automatically grabbing 
+                properties from a related table on each iteration of a loop.
                 To avoid this on more complex queries I made sure to explicitly collect 
-                every field I required and no others with one database request at the 
-                beginning of a script rather than leaving it up to Doctrine to collect 
+                every field I required and no more using one database query at the 
+                beginning of a function rather than leaving it up to Doctrine to collect 
                 what it needed on an ad hoc basis.
             </p>
         </div>
