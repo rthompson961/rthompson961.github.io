@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Richard Thompson</title>
+<link href="style.css" rel="stylesheet" />
+</head>
+<body>
+    <main class="page-content" aria-label="Content">
+        <div class="wrapper">
+            <a href="index.html"><-- Back</a>
+            <header>
+                <h1>Film Reviews</h1>
+            </header>
+
+            <p>
+                <a href="TODO" target="_blank">Demo</a>
+                <a href="https://github.com/rthompson961/films" target="_blank">GitHub</a>
+            </p>
+
+            <p>
+                This was a simple project to experiment with RabbitMQ and Symfony workflows.
+            </p>
+
+            <hr data-content="Message Queue" />
+
+            <p>workflow.yaml</p>
+
+            <pre>
+                <code>
+framework:
+    workflows:
+      comment:
+        type: state_machine
+        audit_trail:
+          enabled: "%kernel.debug%"
+        marking_store:
+          type: 'method'
+          property: 'state'
+        supports:
+          - App\Entity\Comment
+        initial_marking: submitted
+        places:
+          - submitted
+          - spam
+          - notspam
+          - rejected
+          - published
+        transitions:
+          fail:
+            from: submitted
+            to:   spam
+          pass:
+            from: submitted
+            to:   notspam
+          reject:
+            from: notspam
+            to:   rejected
+          publish:
+            from: notspam
+            to:   published
+                </code>
+            </pre>
+
+            <p>
+                When a new comment is first entered onto the site, a new 
+                message is created in the database with its state set 
+                to 'submitted'. At this point the user receives a 
+                confirmation that their comment has been sent for 
+                moderation.
+            </p>
+
+            <p>
+                Meanwhile the message contents are placed in the message 
+                queue. When the message is processed its contents are 
+                first sent to the external <em>akismet</em> spam detection 
+                service and depending on the results sent back its state 
+                is updated to either 'spam' or 'notspam'. 
+            </p>
+
+            <p>
+                Messages that are flagged as 'spam' go no further. Newly 
+                updated 'notspam' messages are sent by email to an admin  
+                with the message contents and links to publish or reject 
+                the submitted comment.
+            </p>
+
+            <p>
+                A verified message has its state updated to 'published' and 
+                will now appear on the site when comments are retrieved 
+                for the film the comment belongs to. The user who submitted 
+                the comment is sent an email notifying them of publication.
+            </p>
+        </div>
+    </main>    
+</body>
+</html>
