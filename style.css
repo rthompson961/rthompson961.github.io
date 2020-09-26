@@ -1,6 +1,6 @@
 html {
-    color: black;
-    background-color: white;
+    color: #d9d9d9;
+    background-color: #404040;
     font-family: monospace;
     font-size: 21px;
     line-height: 1.3;
@@ -13,14 +13,21 @@ html {
     padding: 0 1rem;
 }
 
-h2, h3, h4, h5, h6 {
+h1 {
+    color: #f2f2f2;
+}
+
+h2 {
     margin-top: 3rem;
+}
+
+a {
+    color: #33adff;
 }
 
 hr {
     border: 0;
     margin: 2rem 0;
-    text-align: center;
 }
 
 hr:before {
@@ -40,20 +47,6 @@ li {
     font-size: 14px;
     line-height: 1.6;
     margin: 0.6rem 0;
-}
-
-ul ul li {
-    list-style: none;
-    margin: 0.2rem 0;
-}
-
-ul ul ul {
-    margin-bottom: 35px;
-    padding-left: 0;
-}
-
-ul ul ul li {
-    list-style: square;
 }
 
 table, th, td {
@@ -83,6 +76,7 @@ blockquote p {
 }
 
 div.project {
+    background-color: #fff;
     border: 1px solid #dddddd;
     float: left;
     margin-bottom: 40px;
@@ -100,4 +94,12 @@ div.content {
 
 div.links, div.details, div.thumb, div.tech {
     float: left;
+}
+
+div.project p, div.project li {
+    color: #000;
+}
+
+div.project a {
+    color: #1d79ff;
 }
