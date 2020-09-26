@@ -18,30 +18,30 @@ h1 {
 }
 
 h2 {
-    margin-top: 3rem;
+    font-size: 21px;
+    margin: 40px 0;
+}
+
+h3 {
+    font-size: 18px;
+    margin: 0;
 }
 
 a {
     color: #33adff;
 }
 
-hr {
-    border: 0;
-    margin: 2rem 0;
-}
-
-hr:before {
-    content: "/////"
-} 
-
-hr:after {
-    content: attr(data-content) "/////"
-}
-
 p {
     font-size: 16px;
     margin: 1rem 0;
- }
+}
+
+p.label {
+    line-height: 100%;
+    margin: 0;
+    padding: 0;
+    font-style: italic;
+}
 
 li {
     font-size: 14px;
@@ -54,6 +54,10 @@ table, th, td {
     border: thin solid black;
     border-collapse: collapse;
     padding: 0.4rem;
+}
+
+pre {
+    margin: 0;
 }
 
 code {
