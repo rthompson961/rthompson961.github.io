@@ -81,3 +81,23 @@ blockquote {
 blockquote p {
     margin: 0;
 }
+
+div.project {
+    border: 1px solid #dddddd;
+    float: left;
+    margin-bottom: 40px;
+    width: 700px;
+}
+
+div.bar {
+    background: #ddd url("bar.png") no-repeat;
+    height: 22px;
+}
+
+div.content {
+    padding: 0 20px;
+}
+
+div.links, div.details, div.thumb, div.tech {
+    float: left;
+}
